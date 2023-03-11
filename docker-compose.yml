@@ -1,0 +1,37 @@
+version: "3.7"
+services:
+  mysql_user:
+    image: library/mysql:8
+    env_file: ./.env
+    ports:
+      - $MYSQLDB_LOCAL_PORT:$MYSQLDB_DOCKER_PORT
+    networks:
+      - springmysql-net
+    environment:
+      MYSQL_ROOT_PASSWORD:  $MYSQL_ROOT_PASSWORD
+      MYSQL_DATABASE: $MYSQL_DATABASE
+      MYSQL_USER: $MYSQL_USER
+      MYSQL_PASSWORD: $MYSQL_PASSWORD
+    volumes:
+      - /data/mysql-user
+    restart: always
+  msvc_users:
+    image: msvc_users
+    build: .
+    env_file: ./.env
+    restart: always
+    ports:
+      - $SPRING_PORT:$SPRING_PORT
+    depends_on:
+      - mysql_user
+    networks:
+      - springmysql-net
+    environment:
+      MYSQL_DATABASE: $MYSQL_DATABASE
+      MYSQL_USER: $MYSQL_USER
+      MYSQL_PASSWORD: $MYSQL_PASSWORD
+      MYSQL_HOST: mysql_user
+      MYSQL_ROOT_PASSWORD:  $MYSQL_ROOT_PASSWORD
+      SERVER_PORT: $SPRING_PORT
+networks:
+  springmysql-net:
