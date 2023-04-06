@@ -1,9 +1,12 @@
 package com.marco.springcloud.msvc.users.msvcusers.service.impl;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.marco.springcloud.msvc.users.msvcusers.exceptions.BadRequestException;
 import com.marco.springcloud.msvc.users.msvcusers.exceptions.NotFoundException;
+import com.marco.springcloud.msvc.users.msvcusers.kafka.ProduceUser;
 import com.marco.springcloud.msvc.users.msvcusers.model.dto.UserApi;
+import com.marco.springcloud.msvc.users.msvcusers.model.dto.UserDTO;
 import com.marco.springcloud.msvc.users.msvcusers.model.entity.DocumentType;
 import com.marco.springcloud.msvc.users.msvcusers.model.entity.User;
 import com.marco.springcloud.msvc.users.msvcusers.repository.DocumentTypeRepository;
@@ -14,6 +17,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
@@ -21,6 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 
+@Slf4j
 @Service
 @AllArgsConstructor
 public class UserService
@@ -29,6 +34,7 @@ public class UserService
   private UserRepository userRepository;
   private DocumentTypeRepository documentTypeRepository;
   private UserAPIService userAPIService;
+  private ProduceUser produceUser;
 
 
   @Override
@@ -97,7 +103,18 @@ public class UserService
       final DocumentType documentType = documentTypeRepository.save(user.getDocumentType());
       user.setDocumentType(documentType);
     }
-    return userRepository.save(user);
+
+    final User userCreated = userRepository.save(user);
+    try
+    {
+      produceUser.sendMessage( UserDTO.builder().id( userCreated.getId() ).name( userCreated.getName() ).lastName( userCreated.getLastName() ).build() );
+    }
+    catch ( JsonProcessingException e )
+    {
+      log.error( e.getMessage() );
+    }
+
+    return  userCreated;
   }
 
 

@@ -1,5 +1,6 @@
 package com.marco.springcloud.msvc.users.msvcusers.controller;
 
+import com.marco.springcloud.msvc.users.msvcusers.config.MeasureTime;
 import com.marco.springcloud.msvc.users.msvcusers.model.entity.User;
 import com.marco.springcloud.msvc.users.msvcusers.service.IUserService;
 import java.security.Principal;
@@ -67,6 +68,7 @@ public class UserController
 
 
   @PostMapping
+  @MeasureTime
   public ResponseEntity<?> saveUser( @Valid @RequestBody User user )
   {
     final User newUser = userService.save( user );
