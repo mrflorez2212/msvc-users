@@ -4,7 +4,7 @@ services:
     image: library/mysql:8
     env_file: ./.env
     ports:
-      - $MYSQLDB_LOCAL_PORT:$MYSQLDB_DOCKER_PORT
+      - '3307:3306'
     networks:
       - springmysql-net
     environment:
@@ -21,7 +21,7 @@ services:
     env_file: ./.env
     restart: always
     ports:
-      - $SPRING_PORT:$SPRING_PORT
+      - '3307:3306'
     depends_on:
       - mysql_user
     networks:

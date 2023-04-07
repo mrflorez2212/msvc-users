@@ -13,14 +13,20 @@ import com.marco.springcloud.msvc.users.msvcusers.repository.DocumentTypeReposit
 import com.marco.springcloud.msvc.users.msvcusers.repository.UserRepository;
 import com.marco.springcloud.msvc.users.msvcusers.service.IUserService;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+
+import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+
+import io.github.resilience4j.retry.annotation.Retry;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -82,10 +88,10 @@ public class UserService
     return findAll();
   }
 
-
   @Override
   @Transactional(readOnly = true)
-  @Cacheable(value = "findByEmail", key = "#email")
+  @Cacheable(value = "findByEmail" +
+                     "", key = "#email")
   public User findByEmail(final String email) {
     if (Objects.nonNull(email)) {
       final User userBD = userRepository.findByEmail(email);
